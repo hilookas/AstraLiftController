@@ -3,6 +3,9 @@
 #include <comm.h>
 #include <lwip/sockets.h>
 
+// #define STEPPER_CORRECT_DIR(x) ((x)) // Normal
+#define STEPPER_CORRECT_DIR(x) (-(x)) // Reversed
+
 #define STEPPER_PULSE_PER_REV 800 // 800pulse/rev
 #define RAIL_MM_PER_REV 10 // 10mm/rev
 #define RAIL_MAX_LENGTH_MM 500 // 1000mm length rail // 500mm on desk length
@@ -24,7 +27,7 @@ void timer_callback(void *arg) {
     // Serial.println("limit reach");
     stepper.setCurrentPosition(0);
     reach_zero = true;
-    stepper.moveTo(10);
+    stepper.moveTo(STEPPER_CORRECT_DIR(10));
   }
   stepper.run();
   stepper.run();
@@ -57,7 +60,7 @@ void setup() {
   ESP_ERROR_CHECK(esp_timer_start_once(timer, TIMER_TIMEOUT_US));
 
   stepper.setMaxSpeed(STEPPER_PULSE_PER_REV * 2);
-  stepper.moveTo(-STEPPER_MAX_PULSE);
+  stepper.moveTo(STEPPER_CORRECT_DIR(-STEPPER_MAX_PULSE));
   while (!reach_zero) delay(1);
   Serial.println("reach zero");
   stepper.setMaxSpeed(STEPPER_PULSE_PER_REV * 10); // 空载最大 10000 750rpm
@@ -88,9 +91,9 @@ void loop() {
       if (pos[0] > STEPPER_MAX_PULSE) {
         Serial.println("out of limit");
       } else {
-        stepper.moveTo(pos[0]);
+        stepper.moveTo(STEPPER_CORRECT_DIR(pos[0]));
       }
-      pos[0] = stepper.currentPosition();
+      pos[0] = STEPPER_CORRECT_DIR(stepper.currentPosition());
 
       for (int i = 0; i < 4; ++i) pos[i] = htonl(pos[i]);
       comm_send_blocking(COMM_TYPE_FEEDBACK, (uint8_t *)pos);
@@ -105,7 +108,7 @@ void loop() {
     // Serial.println("No ctrl");
 
     uint32_t pos[4];
-    pos[0] = stepper.currentPosition();
+    pos[0] = STEPPER_CORRECT_DIR(stepper.currentPosition());
 
     for (int i = 0; i < 4; ++i) pos[i] = htonl(pos[i]);
     comm_send_blocking(COMM_TYPE_FEEDBACK, (uint8_t *)pos);
