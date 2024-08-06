@@ -3,13 +3,13 @@
 #include <comm.h>
 #include <lwip/sockets.h>
 
-// #define STEPPER_CORRECT_DIR(x) ((x)) // Normal
-#define STEPPER_CORRECT_DIR(x) (-(x)) // Reversed
+#define STEPPER_CORRECT_DIR(x) ((x)) // Normal
+// #define STEPPER_CORRECT_DIR(x) (-(x)) // Reversed
 
 #define STEPPER_PULSE_PER_REV 800 // 800pulse/rev
-#define RAIL_MM_PER_REV 10 // 10mm/rev
-#define RAIL_MAX_LENGTH_MM 500 // 1000mm length rail // 500mm on desk length
-#define STEPPER_MAX_PULSE (RAIL_MAX_LENGTH_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV) // 80000
+#define RAIL_MM_PER_REV 75 // 10mm/rev
+#define RAIL_MAX_LENGTH_MM 1200 // 1000mm length rail // 500mm on desk length
+#define STEPPER_MAX_PULSE ((float)RAIL_MAX_LENGTH_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV) // 80000 * 10 / 75
 
 // Define some steppers and the pins the will use
 AccelStepper stepper(AccelStepper::DRIVER, 2, 4);
@@ -43,14 +43,17 @@ void timer_callback(void *arg) {
   ESP_ERROR_CHECK(esp_timer_start_once(timer, TIMER_TIMEOUT_US));
 }
 
+#define MAX_SPEED_MM 500 // mm/s
+#define ACCELERATION_MM 750 // mm/s/s
+
 void setup() {
   Serial.begin(921600);
 
   pinMode(15, INPUT);
 
   stepper.setMinPulseWidth(2); // 防止丢步 驱动器要求最小 2us 持续时间
-  stepper.setMaxSpeed(STEPPER_PULSE_PER_REV * 10); // 空载最大 STEPPER_PULSE_PER_REV * 12.5 = 10000 = 750rpm
-  stepper.setAcceleration(STEPPER_PULSE_PER_REV * 10);
+  stepper.setMaxSpeed((float)MAX_SPEED_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV); // 空载最大 STEPPER_PULSE_PER_REV * 12.5 = 10000 = 750rpm
+  stepper.setAcceleration((float)ACCELERATION_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV);
 
   // https://github.com/espressif/esp-idf/blob/v5.2.2/examples/system/esp_timer/main/esp_timer_example_main.c
   const esp_timer_create_args_t timer_args = {
@@ -59,11 +62,11 @@ void setup() {
   ESP_ERROR_CHECK(esp_timer_create(&timer_args, &timer));
   ESP_ERROR_CHECK(esp_timer_start_once(timer, TIMER_TIMEOUT_US));
 
-  stepper.setMaxSpeed(STEPPER_PULSE_PER_REV * 2);
+  stepper.setMaxSpeed((float)100 / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV);
   stepper.moveTo(STEPPER_CORRECT_DIR(-STEPPER_MAX_PULSE));
   while (!reach_zero) delay(1);
   Serial.println("reach zero");
-  stepper.setMaxSpeed(STEPPER_PULSE_PER_REV * 10); // 空载最大 10000 750rpm
+  stepper.setMaxSpeed((float)MAX_SPEED_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV); // 空载最大 10000 750rpm
 
   comm_init();
 
