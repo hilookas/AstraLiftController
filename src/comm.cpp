@@ -1,7 +1,6 @@
 #include "comm.h"
 #include <string.h>
 #include <Arduino.h>
-#include "main.h"
 
 // 初始化串口
 // 返回是否发生错误
@@ -36,7 +35,7 @@ bool serial_recv_poll(uint8_t *c) {
 int comm_payload_size[] = {
   16, // COMM_TYPE_PING
   16, // COMM_TYPE_PONG
-  16, // COMM_TYPE_FEEDBACK
+  16, // COMM_TYPE_CTRL
   16, // COMM_TYPE_FEEDBACK
 };
 
@@ -46,7 +45,7 @@ int comm_payload_size[] = {
 bool comm_type_importance[] = {
   false, // COMM_TYPE_PING
   false, // COMM_TYPE_PONG
-  false, // COMM_TYPE_FEEDBACK
+  false, // COMM_TYPE_CTRL
   false, // COMM_TYPE_FEEDBACK
 };
 
