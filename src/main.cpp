@@ -3,8 +3,8 @@
 #include <comm.h>
 #include <lwip/sockets.h>
 
-#define STEPPER_CORRECT_DIR(x) ((x)) // Normal
-// #define STEPPER_CORRECT_DIR(x) (-(x)) // Reversed
+#define STEPPER_CORRECT_DIR(x) ((x)) // Normal (right)
+// #define STEPPER_CORRECT_DIR(x) (-(x)) // Reversed (left)
 
 #define STEPPER_PULSE_PER_REV 800 // pulse/rev
 #define RAIL_MM_PER_REV 75 // mm/rev
@@ -43,8 +43,13 @@ void timer_callback(void *arg) {
   ESP_ERROR_CHECK(esp_timer_start_once(timer, TIMER_TIMEOUT_US));
 }
 
-#define MAX_SPEED_MM 500 // mm/s
-#define ACCELERATION_MM 750 // mm/s/s
+// Max
+// #define MAX_SPEED_MM 500 // mm/s
+// #define ACCELERATION_MM 750 // mm/s/s
+
+// slower for better stability
+#define MAX_SPEED_MM 300 // mm/s
+#define ACCELERATION_MM 100 // mm/s/s
 
 void setup() {
   Serial.begin(921600);
