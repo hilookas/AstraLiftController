@@ -12,7 +12,7 @@
 #define STEPPER_MAX_PULSE ((float)RAIL_MAX_LENGTH_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV)
 
 // Define some steppers and the pins the will use
-AccelStepper stepper(AccelStepper::DRIVER, 2, 4);
+AccelStepper stepper(AccelStepper::DRIVER, 20, 19);
 
 bool reach_zero = false;
 
@@ -23,7 +23,7 @@ uint32_t last_action_time;
 esp_timer_handle_t timer;
 
 void timer_callback(void *arg) {
-  if (!digitalRead(15)) {
+  if (!digitalRead(14)) {
     // Serial.println("limit reach");
     stepper.setCurrentPosition(0);
     reach_zero = true;
@@ -54,7 +54,7 @@ void timer_callback(void *arg) {
 void setup() {
   Serial.begin(921600);
 
-  pinMode(15, INPUT_PULLUP);
+  pinMode(14, INPUT_PULLUP);
 
   stepper.setMinPulseWidth(2); // 防止丢步 驱动器要求最小 2us 持续时间
   stepper.setMaxSpeed((float)MAX_SPEED_MM / RAIL_MM_PER_REV * STEPPER_PULSE_PER_REV); // 空载最大 750rpm
